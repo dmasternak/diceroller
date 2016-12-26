@@ -1,0 +1,45 @@
+CREATE TABLE tbl_game (
+id_game int NOT NULL AUTO_INCREMENT,
+name varchar(255) NOT NULL,
+PRIMARY KEY (id_game)
+)
+
+Create TABLE tbl_player (
+id_player int NOT NULL AUTO_INCREMENT,
+name varchar(255) NOT NULL,
+PRIMARY KEY (id_player)
+)
+
+Create TABLE tbl_gameplayer (
+id_gameplayer int NOT NULL AUTO_INCREMENT,
+game_id int NOT NULL,
+isGM boolean NOT NULL,
+player_id int NOT NULL,
+PRIMARY KEY (id_gameplayer),
+FOREIGN KEY (game_id) REFERENCES tbl_game(id_game),
+FOREIGN KEY (player_id) REFERENCES tbl_player(id_player)
+)
+
+Create TABLE tbl_chat (
+id_chat int NOT NULL AUTO_INCREMENT,
+message text NOT NULL,
+game_id int NOT NULL,
+player_id int NOT NULL,
+date datetime NOT NULL,
+receiver_id int,
+PRIMARY KEY (id_chat),
+FOREIGN KEY (game_id) REFERENCES tbl_game(id_game),
+FOREIGN KEY (player_id) REFERENCES tbl_player(id_player),
+FOREIGN KEY (receiver_id) REFERENCES tbl_player(id_player)
+)
+
+Create TABLE tbl_playerstats (
+id_playerstats int NOT NULL AUTO_INCREMENT,
+name varchar(255) NOT NULL,
+val int NOT NULL,
+depend varchar(255),
+checker varchar(255),
+player_id int NOT NULL,
+PRIMARY KEY (id_playerstats),
+FOREIGN KEY (player_id) REFERENCES tbl_player(id_player)
+)
