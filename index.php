@@ -9,9 +9,9 @@ session_start();
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="css/themes/default/jquery.mobile-1.4.5.min.css">
 <script src="js/jquery.min.js"></script>
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
+<link rel="stylesheet" href="css/themes/default/jquery.mobile-1.4.5.min.css">
 
 <style type="text/css">
 html,body {
@@ -29,63 +29,71 @@ html,body {
 </style>
 
 <script type="text/javascript">
+$( document ).ready(function() {
+
+
+$(document).on('click', '#t1r5', function () {
+    alert("here dawg");
+    $("profilestats").append("<div class=\"profilestats_single\"><input type=\"text\" value=\"name\" id=\"name\" /><input type=\"text\" value=\"value\" id=\"value\" /><input type=\"text\" value=\"depend\" id=\"depend\" /><input type=\"text\" value=\"checker\" id=\"checker\" /></div>");
+});
+
+
+$(document).on('click', '#submit_joingame', init);
+$(document).on('click', '#submit_sendmessage', send);
+        
 var socket;
 
-function receive(msg) {
-    log("Received: " + msg.data);
-}
-
 function init() {
-    var selPlayer = $("jplayer");
-    var selGame   = $("jgame");
+    var selPlayer = $("#jplayer");
+    var selGame   = $("#jgame");
 
     if(selPlayer.selectedIndex == -1)
         return null;
     
-    var player_name = selPlayer.options[selPlayer.selectedIndex].text;
-    var player_id = selPlayer.value;
-    var game_id = selGame.value;
-    var host = "ws://127.0.0.1:9000/"+player_id+"/"+game_id; // SET THIS TO YOUR SERVER
-    alert(host);
+    var player_name = $("#jplayer option:selected").text();
+    var player_id = selPlayer.val();
+    var game_id = selGame.val();
+    var host = "ws://127.0.0.1:9000/"+player_id+"/"+game_id;
     try {
         socket = new WebSocket(host);
-		log('WebSocket - status '+socket.readyState);
-		socket.onopen    = function(msg) { 
-							   log("Welcome  " + player_name); 
+		$("#msgs").append('WebSocket - status '+socket.readyState);
+		socket.onopen    = function(msg) {
+            $("#msgs").append("Welcome  " + player_name + "</br>"); 
 						   };
 		socket.onmessage = function(msg) {
-            log(msg.data);
+            $("#msgs").append(msg.data + "</br>");
         }
 		socket.onclose   = function(msg) { 
-							   log("Disconnected - status "+this.readyState); 
-						   };
+            $("#msgs").append("Disconnected - status "+this.readyState + "</br>"); 
+        };
 	}
 	catch(ex){ 
-		log(ex); 
+		$("#msgs").append(ex); 
 	}
-    $("message").focus();
+    $("#chatmessage").focus();
 }
 
 function send(){
  	var txt,msg;
-	txt = $("message1");
-	msg = txt.value;
+	txt = $("#chatmessage");
+	msg = txt.val();
 	if(!msg) { 
-		alert("message1 can not be empty"); 
+		alert("chatmessage can not be empty"); 
 		return; 
 	}
 	txt.value="";
 	txt.focus();
 	try { 
 		socket.send(msg); 
-		log('Sent: '+msg); 
+		$("#msgs").append("Sent: " + msg); 
 	} catch(ex) { 
-		log(ex); 
+		$("#msgs").append(ex); 
 	}
 }
+
 function quit(){
 	if (socket != null) {
-		log("Goodbye!");
+		$("#msgs").append("Goodbye!");
 		socket.close();
 		socket=null;
 	}
@@ -97,9 +105,46 @@ function reconnect() {
 }
 
 // Utilities
-function $(id){ return document.getElementById(id); }
-function log(msg){ $("msgs").innerHTML+="<br>"+msg; }
-function onkey(event){ if(event.keyCode==13){ send(); } }
+    //function onkey(event){ if(event.keyCode==13){ send(); } }
+
+function testsave() {
+    var divs = $("profilestats").getElementsByClassName("profilestats_single");
+    var input_name;
+    var input_value;
+    var input_depend;
+    var input_checker;
+    
+    for(var i = 0; i < divs.length; i++) {
+        var inner = divs[i].getElementsByTagName("input");
+        for(var j = 0; j < inner.length; j++) {
+            if(inner[j].id == "name")
+                input_name = inner[j].value;
+            else if(inner[j].id == "value")
+                input_value = inner[j].value;
+            else if(inner[j].id == "depend")
+                input_depend = inner[j].value;
+            else if(inner[j].id == "checker")
+                input_checker = inner[j].value;
+            else
+                alert("Something goes wrong");
+        }
+    
+        jQuery(function($) {
+            $.ajax({ url: 'scripts/test.php',
+             data: {name: input_name,
+             value: input_value,
+             depend: input_depend,
+             checker: input_checker},
+             type: 'post',
+             success: function(output) {
+                 alert(output);
+             }
+             });
+        });
+    }
+}
+    
+});
 </script>
 
 </head>
@@ -152,7 +197,7 @@ function onkey(event){ if(event.keyCode==13){ send(); } }
           ?>
         </select>
       </div>
-      <input type="submit" data-inline="true" name="submitjoin" onClick="init()" value="Join Game">
+      <a data-role="button" id="submit_joingame">Join Game</a>
     </form>
   </div>
 </div>
@@ -179,8 +224,8 @@ function onkey(event){ if(event.keyCode==13){ send(); } }
     <div id="msgs"></div>
   </div>
   <div data-role="footer" data-position="fixed">
-      <input type="textbox" onkeypress="onkey(event)" id="message1" />
-      <button onclick="send()">Send</button>
+      <input type="textbox" id="chatmessage" />
+      <a id="submit_sendmessage" data-role="button">send</a>
   </div>
 </div> 
 
@@ -204,6 +249,10 @@ function onkey(event){ if(event.keyCode==13){ send(); } }
 
   <div data-role="main" class="ui-content">
     Here is the profile
+                            
+    <div class="profilestats"></div>
+    <a data-role="button" id="t1r5">Add</a>
+    <button onclick="testsave()">Testsave</button>                        
   </div>
 </div> 
 
